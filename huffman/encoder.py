@@ -16,35 +16,15 @@ class Node:
 
 class Encoder:
     in_file_name = str()
-    out_file_name = str()
+    #out_file_name = str()
     probability_dict = dict()
     letter_and_code = dict()
     letters_number = 0
     symbols_number = 0
 
-    def __init__(self, in_file_name, out_file_name):
+    #def __init__(self, in_file_name, out_file_name):
+    def __init__(self, in_file_name):
         self.in_file_name = in_file_name
-        self.out_file_name = out_file_name
-
-    def read_from_file(self, file_name):
-        self.in_file_name = file_name
-        in_file = open(self.in_file_name, "br")
-        for line in in_file:
-            decode_line = line.decode('utf-8')
-            print(decode_line, end = '')
-
-    def write_to_file(self, file_name):
-        out_file = open(file_name, "bw")
-        enc_bytes = bytes('abaabaaabaaaab\n', encoding = 'utf-8')
-        out_file.write(enc_bytes)
-        enc_bytes = bytes('babababab\n', encoding = 'utf-8')
-        out_file.write(enc_bytes)
-        enc_bytes = bytes('cdadcafdfa\n', encoding = 'utf-8')
-        out_file.write(enc_bytes)
-        enc_bytes = bytes('ewqwqwqadfadf\n', encoding = 'utf-8')
-        out_file.write(enc_bytes)
-        enc_bytes = bytes('fdgaklmxdfm\n', encoding = 'utf-8')
-        out_file.write(enc_bytes)
 
     def calculate_probability(self):
         in_file = open(self.in_file_name, "br")
@@ -111,14 +91,15 @@ class Encoder:
             print(list(letter), ' : ', self.letter_and_code[letter])
         return
 
-    def create_code_for_input_file(self):
+    def create_code_for_input_file(self, out_zmh):
         in_file = open(self.in_file_name, "br")
-        out_file = open(self.out_file_name, "ba")
+        #out_file = open(self.out_file_name, "ba")
+        #out_file = open(self.out_file_name, "bw")
         for line in in_file:
             decode_line = line.decode('utf-8')
             for letter in decode_line:
                 enc_bytes = bytes(self.letter_and_code[letter], encoding = 'utf-8')
-                out_file.write(enc_bytes)
+                out_zmh.write(enc_bytes)
 
     def calculate_average_lenght(self):
         average_sum = 0.0

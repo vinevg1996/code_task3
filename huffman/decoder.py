@@ -82,28 +82,25 @@ class Decoder:
         self.out_file_name = out_file_name
         self.tree_root = tree_root
 
-    def decode_input_file(self):
-        in_file = open(self.in_file_name, "br")
+    def decode_input_file(self, line):
         out_file = open(self.out_file_name, "bw")
         curr_node = self.tree_root
-        for line in in_file:
-            decode_line = line.decode('utf-8')
-            letter_list = list()
-            for letter in decode_line:
-                letter_list.append(letter)
-                if (letter == '0'):
-                    if (curr_node.zeroSonNode == None):
-                        return 'damage file'
-                    curr_node = curr_node.zeroSonNode
-                elif (letter == '1'):
-                    if (curr_node.oneSonNode == None):
-                        return 'damage file'
-                    curr_node = curr_node.oneSonNode
-                else:
+        letter_list = list()
+        for letter in line:
+            letter_list.append(letter)
+            if (letter == '0'):
+                if (curr_node.zeroSonNode == None):
                     return 'damage file'
-                if (curr_node.is_leaf == True):
-                    enc_bytes = bytes(curr_node.letter, encoding = 'utf-8')
-                    out_file.write(enc_bytes)
-                    curr_node = self.tree_root
-                    letter_list = list()
+                curr_node = curr_node.zeroSonNode
+            elif (letter == '1'):
+                if (curr_node.oneSonNode == None):
+                    return 'damage file'
+                curr_node = curr_node.oneSonNode
+            else:
+                return 'damage file'
+            if (curr_node.is_leaf == True):
+                enc_bytes = bytes(curr_node.letter, encoding = 'utf-8')
+                out_file.write(enc_bytes)
+                curr_node = self.tree_root
+                letter_list = list()
         return "everything is OK"

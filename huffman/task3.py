@@ -14,48 +14,70 @@ import random
 if (sys.argv[1] == "encode_mode"):
     #sys.argv[2] -- input_bin_file_for_encoding
     #write encode file in .zmh
-    #write letter_and_code in .lac
     bin_file = sys.argv[2]
     dot_id = bin_file.rfind(".", 0)
     zmh_file = str(bin_file[0:dot_id]) + '.zmh'
-    lac_file = str(bin_file[0:dot_id]) + '.lac'
-    
-    enc = Encoder(bin_file, zmh_file)
+    enc = Encoder(bin_file)
     enc.calculate_probability()
     letter_and_code = enc.create_Huffman_code()
-    enc.create_code_for_input_file()
-    out_lac = open(lac_file, 'w')
+    out_zmh = open(zmh_file, "bw")
     for letter in letter_and_code.keys():
-        out_lac.write(str(list(letter)))
-        out_lac.write("$")
-        out_lac.write(letter_and_code[letter])
-        out_lac.write("\n")
+        enc_bytes = bytes(str(list(letter)), encoding = 'utf-8')
+        out_zmh.write(enc_bytes)
+        enc_bytes = bytes(letter_and_code[letter], encoding = 'utf-8')
+        out_zmh.write(enc_bytes)
+        enc_bytes = bytes("\n", encoding = 'utf-8')
+        out_zmh.write(enc_bytes)
+    enc.create_code_for_input_file(out_zmh)
 elif (sys.argv[1] == "decode_mode"):
-    #sys.argv[2] -- input_file_with_letter_and_code
-    #sys.argv[3] -- input_bin_file_for_decoding
-    #write decode file in .dec
+    #sys.argv[2] -- input_bin_file_for_decoding
+    #write decode in file without .zmh
+    bin_file = sys.argv[2]
+    dot_id = bin_file.rfind(".", 0)
+    if (bin_file[dot_id + 1 : ] != "zmh"):
+        print("extention is not zmh")
+        exit(0)
+    zmh_file = open(sys.argv[2], 'r')
     letter_and_code = dict()
-    lac_file = open(sys.argv[2], 'r')
-    for line in lac_file:
-        line_list = line.split('$', 2)
-        sym = str(line_list[0][2 : len(line_list[0]) - 2])
-        if ((sym[0] == '\\') and (sym[1] == 'n')):
-            sym = '\n'
-        if ((sym[0] == '\\') and (sym[1] == 't')):
-            sym = '\t'
-        if ((sym[0] == '\\') and (sym[1] == 'r')):
-            sym = '\r'
-        if ((sym[0] == '\\') and (sym[1] == 'x')):
-            sym = '\xad'
-        code = line_list[1][0 : len(line_list[1]) - 1]
-        letter_and_code[sym] = code
+    for line in zmh_file:
+        if (line[0] == '['):
+            id_bracket = line.rfind(']', 0)
+            sym = line[2 : id_bracket - 1]
+            if ((sym[0] == '\\') and (sym[1] == 'n')):
+                sym = '\n'
+            elif ((sym[0] == '\\') and (sym[1] == 'a')):
+                sym = '\a'
+            elif ((sym[0] == '\\') and (sym[1] == 'b')):
+                sym = '\b'
+            elif ((sym[0] == '\\') and (sym[1] == 'f')):
+                sym = '\f'
+            elif ((sym[0] == '\\') and (sym[1] == 'r')):
+                sym = '\r'
+            elif ((sym[0] == '\\') and (sym[1] == 't')):
+                sym = '\t'
+            elif ((sym[0] == '\\') and (sym[1] == 'v')):
+                sym = '\v'
+            elif ((sym[0] == '\\') and (sym[1] == 'x')):
+                sym = '\xad'
+            elif ((sym[0] == '\\') and (sym[1] == '\\')):
+                sym = '\\'
+            code = line[id_bracket + 1 : len(line) - 1]
+            letter_and_code[sym] = code
+        else:
+            last_line = line
     root = Node(None, False, letter_and_code, str())
     root.create_tree()
-    bin_file = sys.argv[3]
-    dot_id = bin_file.rfind(".", 0)
-    dec_file = str(bin_file[0:dot_id]) + '.dec'
+    dec_file = str(bin_file[0:dot_id])
     dec = Decoder(bin_file, dec_file, root)
-    info = dec.decode_input_file()
+    info = dec.decode_input_file(last_line)
     print(info)
 else:
     print("please, enter mode")
+
+#\n  Перевод строки
+#\a  Звонок
+#\b  Забой
+#\f  Перевод страницы
+#\r  Возврат каретки
+#\t  Горизонтальная табуляция
+#\v  Вертикальная табуляция
